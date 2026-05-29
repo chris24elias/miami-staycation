@@ -262,6 +262,9 @@ let soundOn = true;
 let loveVal = 0;
 let loveTimer = null;
 let loveTick = 0;
+let discoOn = false;
+let discoTimer = null;
+let discoTimeout = null;
 
 // --- persistence ---
 function loadState() {
@@ -767,6 +770,99 @@ function toggleOcean() {
   if (btn) btn.textContent = "🌊 waves ✓";
 }
 
+// --- disco / rave mode ---
+function discoKick(ctx, t) {
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.frequency.setValueAtTime(150, t);
+  o.frequency.exponentialRampToValueAtTime(50, t + 0.12);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.5, t + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.start(t);
+  o.stop(t + 0.2);
+}
+function discoHat(ctx, t) {
+  const n = Math.floor(ctx.sampleRate * 0.05);
+  const buf = ctx.createBuffer(1, n, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 7000;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.16, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+  src.connect(hp);
+  hp.connect(g);
+  g.connect(ctx.destination);
+  src.start(t);
+  src.stop(t + 0.06);
+}
+function discoBass(ctx, t, freq) {
+  const o = ctx.createOscillator();
+  o.type = "sawtooth";
+  o.frequency.value = freq;
+  const lp = ctx.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.value = 700;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.16, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+  o.connect(lp);
+  lp.connect(g);
+  g.connect(ctx.destination);
+  o.start(t);
+  o.stop(t + 0.25);
+}
+function startDisco() {
+  if (discoOn) return;
+  discoOn = true;
+  const ov = $("disco");
+  if (ov) ov.hidden = false;
+  const ctx = getCtx();
+  const bpm = 124;
+  const beat = 60 / bpm;
+  const beats = 14;
+  if (ctx && soundOn) {
+    const start = ctx.currentTime + 0.06;
+    const line = [55, 55, 82.41, 73.42];
+    for (let i = 0; i < beats; i++) {
+      const t = start + i * beat;
+      discoKick(ctx, t);
+      discoHat(ctx, t + beat / 2);
+      discoBass(ctx, t, line[i % line.length]);
+    }
+  }
+  const colors = ["#ff3d7f", "#ffd23f", "#2ec4b6", "#7a5cff", "#ff8c42", "#26d4ff"];
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (ov && reduce) {
+    ov.style.background = "linear-gradient(135deg,#7a5cff,#ff3d7f,#ffd23f)";
+  } else if (ov) {
+    let b = 0;
+    discoTimer = setInterval(() => {
+      ov.style.background = colors[b % colors.length];
+      if (hasConfetti() && b % 2 === 0) {
+        window.confetti({ particleCount: 28, spread: 90, startVelocity: 24, ticks: 60, origin: { y: 0.5 }, colors: PALETTE, zIndex: 210 });
+      }
+      b++;
+    }, beat * 1000); // ~2 strobes/sec — kept gentle on purpose
+  }
+  discoTimeout = setTimeout(stopDisco, beats * beat * 1000);
+}
+function stopDisco() {
+  discoOn = false;
+  if (discoTimer) { clearInterval(discoTimer); discoTimer = null; }
+  if (discoTimeout) { clearTimeout(discoTimeout); discoTimeout = null; }
+  const ov = $("disco");
+  if (ov) { ov.hidden = true; ov.style.background = ""; }
+}
+
 // --- love-o-meter ---
 function loveVerdictFor(v) {
   if (v >= 1500) return "🤯 the machine exploded — unmeasurable";
@@ -1118,6 +1214,8 @@ $("heroPet").addEventListener("click", boopPup);
 $("complimentBtn").addEventListener("click", pressCompliment);
 $("soundBtn").addEventListener("click", toggleSound);
 $("oceanBtn").addEventListener("click", toggleOcean);
+$("discoBtn").addEventListener("click", startDisco);
+$("disco").addEventListener("click", stopDisco);
 $("lovePad").addEventListener("pointerdown", loveStart);
 $("lovePad").addEventListener("pointercancel", loveEnd);
 document.addEventListener("pointerup", loveEnd);

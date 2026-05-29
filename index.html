@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=9" />
+  <link rel="stylesheet" href="styles.css?v=10" />
 </head>
 <body>
   <!-- Slim sticky progress bar -->
@@ -97,6 +97,7 @@
         <button type="button" class="reset-btn" id="introReplay">💌 replay note</button>
         <button type="button" class="reset-btn" id="soundBtn">🔊 sounds</button>
         <button type="button" class="reset-btn" id="oceanBtn">🌊 waves</button>
+        <button type="button" class="reset-btn" id="discoBtn">🪩 disco</button>
         <button type="button" class="reset-btn" id="resetBtn">↺ start over</button>
       </div>
       <p class="footer__made">made with 💛 for Baby</p>
@@ -125,6 +126,12 @@
     </div>
   </div>
 
+  <!-- Disco / rave mode -->
+  <div class="disco" id="disco" hidden>
+    <span class="disco__ball" aria-hidden="true">🪩</span>
+    <span class="disco__tap">tap to stop</span>
+  </div>
+
   <!-- MEGA finale takeover -->
   <div class="mega" id="mega" hidden><span class="mega__text">🎉 WE DID IT! 🎉</span></div>
 
@@ -141,6 +148,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
