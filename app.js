@@ -18,6 +18,10 @@ const CONFIG = {
   // monthIndex is 0-based, so 4 = May.
   checkout: new Date(2026, 4, 31, 11, 0, 0),
 
+  // Evening mode turns on at/after this hour, and off before nightEndHour
+  nightStartHour: 19,
+  nightEndHour: 6,
+
   categories: [
     {
       title: "Relax & Pamper",
@@ -128,6 +132,7 @@ const CONFIG = {
           when: "Sat May 30 · 5–9pm",
           place: "Miami Beach Bandshell · free 🎉",
           mapsQuery: "Miami Beach Bandshell, 7275 Collins Ave, Miami Beach FL",
+          link: "https://www.miamiandbeaches.com/event/roller-disco/39663",
         },
         {
           id: "poolparty",
@@ -136,6 +141,7 @@ const CONFIG = {
           when: "Fri–Sun · 12–6pm",
           place: "Goodtime Hotel · 21+",
           mapsQuery: "Strawberry Moon, Goodtime Hotel, 601 Washington Ave, Miami Beach FL",
+          link: "https://www.miamiandbeaches.com/event/strawberry-moon-pool-party/36654",
         },
         {
           id: "comedy",
@@ -144,6 +150,7 @@ const CONFIG = {
           when: "Fri May 29 · 8pm",
           place: "South Beach Brewing Co · $5",
           mapsQuery: "South Beach Brewing Company, 210 11th St, Miami Beach FL",
+          link: "https://www.miamiandbeaches.com/event/sillies-on-south-beach-comedy-show/36607",
         },
         {
           id: "movie",
@@ -152,6 +159,7 @@ const CONFIG = {
           when: "Sat May 30 · 7pm",
           place: "AC Hotel Dadeland · ~35 min 🚗",
           mapsQuery: "AC Hotel Miami Dadeland, 7695 N Kendall Dr, Miami FL",
+          link: "https://www.miamiandbeaches.com/event/rooftop-movie-nights-at-the-ac-hotel-miami/38891",
         },
       ],
     },
@@ -290,7 +298,10 @@ function makePlacedCard(item, index) {
         <span class="card__place">📍 ${item.place}</span>
       </span>
     </button>
-    <a class="card__nav" href="${mapsUrl(q)}" target="_blank" rel="noopener" aria-label="Directions to ${item.label}">🧭 directions</a>`;
+    <div class="card__links">
+      <a class="card__nav" href="${mapsUrl(q)}" target="_blank" rel="noopener" aria-label="Directions to ${item.label}">🧭 directions</a>
+      ${item.link ? `<a class="card__nav" href="${item.link}" target="_blank" rel="noopener" aria-label="Details for ${item.label}">🎟️ details</a>` : ""}
+    </div>`;
   card.querySelector(".card__main").addEventListener("click", () => toggle(item, card));
   return card;
 }
@@ -561,6 +572,69 @@ function hideIntro() {
   setTimeout(() => (intro.hidden = true), 500);
 }
 
+// --- live weather + evening mode ---
+function describeWeather(code, isDay) {
+  const clear = isDay ? "☀️" : "🌙";
+  const pcloud = isDay ? "🌤️" : "☁️";
+  const map = {
+    0: [clear, "Clear"],
+    1: [pcloud, "Mostly clear"],
+    2: ["⛅", "Partly cloudy"],
+    3: ["☁️", "Overcast"],
+    45: ["🌫️", "Foggy"],
+    48: ["🌫️", "Foggy"],
+    51: ["🌦️", "Light drizzle"],
+    53: ["🌦️", "Drizzle"],
+    55: ["🌦️", "Drizzle"],
+    56: ["🌦️", "Drizzle"],
+    57: ["🌦️", "Drizzle"],
+    61: ["🌧️", "Light rain"],
+    63: ["🌧️", "Rain"],
+    65: ["🌧️", "Heavy rain"],
+    66: ["🌧️", "Rain"],
+    67: ["🌧️", "Rain"],
+    71: ["❄️", "Snow"],
+    73: ["❄️", "Snow"],
+    75: ["❄️", "Snow"],
+    77: ["❄️", "Snow"],
+    80: ["🌦️", "Showers"],
+    81: ["🌦️", "Showers"],
+    82: ["⛈️", "Heavy showers"],
+    85: ["❄️", "Snow"],
+    86: ["❄️", "Snow"],
+    95: ["⛈️", "Thunderstorm"],
+    96: ["⛈️", "Thunderstorm"],
+    99: ["⛈️", "Thunderstorm"],
+  };
+  const hit = map[code] || ["🌴", "Miami"];
+  return { emoji: hit[0], label: hit[1] };
+}
+
+function loadWeather() {
+  const url =
+    "https://api.open-meteo.com/v1/forecast?latitude=25.7907&longitude=-80.13" +
+    "&current=temperature_2m,weather_code,is_day&temperature_unit=fahrenheit&timezone=America/New_York";
+  fetch(url)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      if (!d || !d.current) return;
+      const c = d.current;
+      const w = describeWeather(c.weather_code, c.is_day);
+      const el = $("weather");
+      el.textContent = `${w.emoji} ${Math.round(c.temperature_2m)}°F · ${w.label}`;
+      el.hidden = false;
+    })
+    .catch(() => {
+      /* offline / blocked — strip just stays hidden */
+    });
+}
+
+function applyTheme() {
+  const h = new Date().getHours();
+  const night = h >= CONFIG.nightStartHour || h < CONFIG.nightEndHour;
+  document.body.classList.toggle("night", night);
+}
+
 // --- boot ---
 hydrateHero();
 hydrateIntro();
@@ -570,6 +644,10 @@ if (doneCount() === total && total > 0) showFinale();
 
 tickCountdown();
 setInterval(tickCountdown, 1000);
+
+loadWeather();
+applyTheme();
+setInterval(applyTheme, 60000);
 
 $("nextBtn").addEventListener("click", whatsNext);
 $("resetBtn").addEventListener("click", resetAll);
