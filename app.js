@@ -4,12 +4,12 @@
    =========================================================== */
 
 const CONFIG = {
-  name: "Donna",
+  name: "Baby",
   note: "Two days of doing absolutely nothing, together 🌴",
   kicker: "🏨 Eden Roc · Miami Beach · May 29–31",
 
   intro: {
-    title: "Hi Donna 💛",
+    title: "Hi Baby 💛",
     note: "No alarms, no rush — just us and the beach for two days. Here's everything I want to do with you. 🌴",
     button: "Let's go 🌴",
   },
