@@ -108,7 +108,13 @@ const CONFIG = {
       title: "Experiences",
       emoji: "🎭",
       items: [
-        { id: "faena", label: "A show", place: "Faena Theater", emoji: "🎭" },
+        {
+          id: "faena",
+          label: "A show",
+          place: "Faena Theater",
+          emoji: "🎭",
+          mapsQuery: "Faena Theater, Miami Beach FL",
+        },
       ],
     },
     {
@@ -121,6 +127,7 @@ const CONFIG = {
           emoji: "🪩",
           when: "Sat May 30 · 5–9pm",
           place: "Miami Beach Bandshell · free 🎉",
+          mapsQuery: "Miami Beach Bandshell, 7275 Collins Ave, Miami Beach FL",
         },
         {
           id: "poolparty",
@@ -128,6 +135,7 @@ const CONFIG = {
           emoji: "🍓",
           when: "Fri–Sun · 12–6pm",
           place: "Goodtime Hotel · 21+",
+          mapsQuery: "Strawberry Moon, Goodtime Hotel, 601 Washington Ave, Miami Beach FL",
         },
         {
           id: "comedy",
@@ -135,6 +143,7 @@ const CONFIG = {
           emoji: "🎤",
           when: "Fri May 29 · 8pm",
           place: "South Beach Brewing Co · $5",
+          mapsQuery: "South Beach Brewing Company, 210 11th St, Miami Beach FL",
         },
         {
           id: "movie",
@@ -142,6 +151,7 @@ const CONFIG = {
           emoji: "🎬",
           when: "Sat May 30 · 7pm",
           place: "AC Hotel Dadeland · ~35 min 🚗",
+          mapsQuery: "AC Hotel Miami Dadeland, 7695 N Kendall Dr, Miami FL",
         },
       ],
     },
@@ -211,6 +221,10 @@ function doneCount() {
   return allItems.filter(isDone).length;
 }
 
+function mapsUrl(query) {
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query);
+}
+
 // --- build the page ---
 function hydrateHero() {
   $("heroKicker").textContent = CONFIG.kicker;
@@ -242,6 +256,7 @@ function buildActivities() {
 
 function makeCard(item, index) {
   if (item.options) return makeOptionCard(item, index);
+  if (item.place) return makePlacedCard(item, index);
 
   const card = document.createElement("button");
   card.type = "button";
@@ -254,10 +269,29 @@ function makeCard(item, index) {
     <span class="card__emoji" aria-hidden="true">${item.emoji}</span>
     <span class="card__body">
       <span class="card__label">${item.label}</span>
-      ${item.when ? `<span class="card__place">🗓️ ${item.when}</span>` : ""}
-      ${item.place ? `<span class="card__place">📍 ${item.place}</span>` : ""}
     </span>`;
   card.addEventListener("click", () => toggle(item, card));
+  return card;
+}
+
+function makePlacedCard(item, index) {
+  const card = document.createElement("div");
+  card.className = "card card--placed" + (isDone(item) ? " card--done" : "");
+  card.dataset.id = item.id;
+  card.style.animationDelay = `${Math.min(index * 55, 600)}ms`;
+  const q = item.mapsQuery || `${item.place}, Miami, FL`;
+  card.innerHTML = `
+    <button type="button" class="card__main" aria-pressed="${isDone(item)}">
+      <span class="card__check" aria-hidden="true"></span>
+      <span class="card__emoji" aria-hidden="true">${item.emoji}</span>
+      <span class="card__body">
+        <span class="card__label">${item.label}</span>
+        ${item.when ? `<span class="card__place">🗓️ ${item.when}</span>` : ""}
+        <span class="card__place">📍 ${item.place}</span>
+      </span>
+    </button>
+    <a class="card__nav" href="${mapsUrl(q)}" target="_blank" rel="noopener" aria-label="Directions to ${item.label}">🧭 directions</a>`;
+  card.querySelector(".card__main").addEventListener("click", () => toggle(item, card));
   return card;
 }
 
@@ -280,13 +314,18 @@ function makeOptionCard(item, index) {
       ${item.options
         .map(
           (o) =>
-            `<button type="button" class="chip${sel.includes(o) ? " chip--on" : ""}" data-opt="${o}">📍 ${o}</button>`
+            `<span class="chip${sel.includes(o) ? " chip--on" : ""}" data-opt="${o}">` +
+            `<button type="button" class="chip__pick">📍 ${o}</button>` +
+            `<a class="chip__nav" href="${mapsUrl(o + ", Miami, FL")}" target="_blank" rel="noopener" aria-label="Directions to ${o}">🧭</a>` +
+            `</span>`
         )
         .join("")}
     </div>`;
   card
-    .querySelectorAll(".chip")
-    .forEach((chip) => chip.addEventListener("click", () => toggleOption(item, chip, card)));
+    .querySelectorAll(".chip__pick")
+    .forEach((pick) =>
+      pick.addEventListener("click", () => toggleOption(item, pick.closest(".chip"), card))
+    );
   return card;
 }
 
@@ -323,7 +362,7 @@ function toggle(item, card) {
   saveState();
 
   card.classList.toggle("card--done", nowDone);
-  card.setAttribute("aria-pressed", String(nowDone));
+  (card.querySelector(".card__main") || card).setAttribute("aria-pressed", String(nowDone));
   updateProgress();
 
   if (nowDone) {
@@ -480,10 +519,11 @@ function resetAll() {
   if (!window.confirm("Clear all your check-offs and start the list fresh?")) return;
   state = {};
   saveState();
-  document.querySelectorAll(".card").forEach((c) => {
-    c.classList.remove("card--done");
-    c.setAttribute("aria-pressed", "false");
-  });
+  document.querySelectorAll(".card").forEach((c) => c.classList.remove("card--done"));
+  document
+    .querySelectorAll("button.card, .card__main")
+    .forEach((b) => b.setAttribute("aria-pressed", "false"));
+  document.querySelectorAll(".chip--on").forEach((ch) => ch.classList.remove("chip--on"));
   hideFinale();
   updateProgress();
 }
