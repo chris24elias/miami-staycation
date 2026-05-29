@@ -6,7 +6,7 @@
 const CONFIG = {
   name: "Donna",
   note: "48 hours of us, the beach, and way too much matcha 💛",
-  kicker: "🌴 Miami Beach · May 29–31 🌴",
+  kicker: "🏨 Eden Roc · Miami Beach · May 29–31",
 
   // Countdown target — checkout. (year, monthIndex, day, hour, min)
   // monthIndex is 0-based, so 4 = May.
@@ -19,8 +19,20 @@ const CONFIG = {
       items: [
         { id: "pool",    label: "Sit by the pool", emoji: "🏝️" },
         { id: "massage", label: "Massage",          emoji: "💆‍♀️" },
-        { id: "facial",  label: "Facial",           emoji: "✨" },
-        { id: "spa",     label: "Spa day",          emoji: "🧖‍♀️" },
+        {
+          id: "facial",
+          label: "Facial",
+          emoji: "✨",
+          hint: "glow time ✨",
+          options: ["Sana Skin Studio Wynwood"],
+        },
+        {
+          id: "spa",
+          label: "Spa day",
+          emoji: "🧖‍♀️",
+          hint: "pure bliss 🧖‍♀️",
+          options: ["K’alma Spa"],
+        },
       ],
     },
     {
@@ -36,9 +48,52 @@ const CONFIG = {
       title: "Treats",
       emoji: "🍵",
       items: [
-        { id: "matcha", label: "Matcha", place: "Aura Matcha",        emoji: "🍵" },
-        { id: "coffee", label: "Coffee run",                          emoji: "☕" },
-        { id: "dinner", label: "Dinner", place: "Cactus Club Cafe",   emoji: "🍽️" },
+        {
+          id: "matcha",
+          label: "Matcha",
+          emoji: "🍵",
+          hint: "so many to try 🍵",
+          options: [
+            "Aura Matcha",
+            "Navi Coffee & Flowers",
+            "Honey Veil",
+            "Baker and Barista",
+            "Maman",
+          ],
+        },
+        {
+          id: "coffee",
+          label: "Coffee",
+          emoji: "☕",
+          hint: "one… or all of them ☕",
+          options: [
+            "Plant The Future Cafe",
+            "Surry Hills Coffee",
+            "Under The Mango Tree",
+            "Cachito Coffee & Bakery",
+          ],
+        },
+        {
+          id: "dinner",
+          label: "Dinner",
+          emoji: "🍽️",
+          hint: "where to tonight?",
+          options: ["Cactus Club Cafe", "Yaya", "Fooq's", "Casa Tua", "Esquina Cubana"],
+        },
+        {
+          id: "pizza",
+          label: "Pizza",
+          emoji: "🍕",
+          hint: "🍕 yes please",
+          options: ["La Leggenda Pizzeria"],
+        },
+        {
+          id: "dessert",
+          label: "Dessert",
+          emoji: "🍩",
+          hint: "treat yourself 🍩",
+          options: ["The Salty", "MYKA Greek Frozen Yogurt"],
+        },
       ],
     },
     {
@@ -46,6 +101,40 @@ const CONFIG = {
       emoji: "🎭",
       items: [
         { id: "faena", label: "A show", place: "Faena Theater", emoji: "🎭" },
+      ],
+    },
+    {
+      title: "Events this weekend",
+      emoji: "🎉",
+      items: [
+        {
+          id: "rollerdisco",
+          label: "Roller Disco",
+          emoji: "🪩",
+          when: "Sat May 30 · 5–9pm",
+          place: "Miami Beach Bandshell · free 🎉",
+        },
+        {
+          id: "poolparty",
+          label: "Strawberry Moon Pool Party",
+          emoji: "🍓",
+          when: "Fri–Sun · 12–6pm",
+          place: "Goodtime Hotel · 21+",
+        },
+        {
+          id: "comedy",
+          label: "Sillies Comedy Show",
+          emoji: "🎤",
+          when: "Fri May 29 · 8pm",
+          place: "South Beach Brewing Co · $5",
+        },
+        {
+          id: "movie",
+          label: "Rooftop Movie Night",
+          emoji: "🎬",
+          when: "Sat May 30 · 7pm",
+          place: "AC Hotel Dadeland · ~35 min 🚗",
+        },
       ],
     },
   ],
@@ -101,8 +190,17 @@ function saveState() {
     /* private mode / storage full — fail quietly */
   }
 }
+function selected(item) {
+  const v = state[item.id];
+  return Array.isArray(v) ? v : [];
+}
+function isDone(item) {
+  const v = state[item.id];
+  if (item.options) return Array.isArray(v) ? v.length > 0 : v === true;
+  return !!v;
+}
 function doneCount() {
-  return allItems.filter((it) => state[it.id]).length;
+  return allItems.filter(isDone).length;
 }
 
 // --- build the page ---
@@ -135,21 +233,78 @@ function buildActivities() {
 }
 
 function makeCard(item, index) {
+  if (item.options) return makeOptionCard(item, index);
+
   const card = document.createElement("button");
   card.type = "button";
-  card.className = "card" + (state[item.id] ? " card--done" : "");
+  card.className = "card" + (isDone(item) ? " card--done" : "");
   card.dataset.id = item.id;
   card.style.animationDelay = `${Math.min(index * 55, 600)}ms`;
-  card.setAttribute("aria-pressed", String(!!state[item.id]));
+  card.setAttribute("aria-pressed", String(isDone(item)));
   card.innerHTML = `
     <span class="card__check" aria-hidden="true"></span>
     <span class="card__emoji" aria-hidden="true">${item.emoji}</span>
     <span class="card__body">
       <span class="card__label">${item.label}</span>
+      ${item.when ? `<span class="card__place">🗓️ ${item.when}</span>` : ""}
       ${item.place ? `<span class="card__place">📍 ${item.place}</span>` : ""}
     </span>`;
   card.addEventListener("click", () => toggle(item, card));
   return card;
+}
+
+function makeOptionCard(item, index) {
+  const card = document.createElement("div");
+  card.className = "card card--options" + (isDone(item) ? " card--done" : "");
+  card.dataset.id = item.id;
+  card.style.animationDelay = `${Math.min(index * 55, 600)}ms`;
+  const sel = selected(item);
+  card.innerHTML = `
+    <div class="card__head">
+      <span class="card__check" aria-hidden="true"></span>
+      <span class="card__emoji" aria-hidden="true">${item.emoji}</span>
+      <span class="card__body">
+        <span class="card__label">${item.label}</span>
+        <span class="card__place">${item.hint || "tap a spot"}</span>
+      </span>
+    </div>
+    <div class="chips">
+      ${item.options
+        .map(
+          (o) =>
+            `<button type="button" class="chip${sel.includes(o) ? " chip--on" : ""}" data-opt="${o}">📍 ${o}</button>`
+        )
+        .join("")}
+    </div>`;
+  card
+    .querySelectorAll(".chip")
+    .forEach((chip) => chip.addEventListener("click", () => toggleOption(item, chip, card)));
+  return card;
+}
+
+function toggleOption(item, chip, card) {
+  const opt = chip.dataset.opt;
+  const wasDone = isDone(item);
+  const sel = selected(item).slice();
+  const i = sel.indexOf(opt);
+  const turnedOn = i < 0;
+  if (turnedOn) sel.push(opt);
+  else sel.splice(i, 1);
+  if (sel.length) state[item.id] = sel;
+  else delete state[item.id];
+  saveState();
+
+  chip.classList.toggle("chip--on", turnedOn);
+  const nowDone = isDone(item);
+  card.classList.toggle("card--done", nowDone);
+  updateProgress();
+
+  if (turnedOn) {
+    popHearts(chip);
+    burstAt(chip);
+  }
+  if (!wasDone && nowDone && doneCount() === total) showFinale();
+  if (wasDone && !nowDone) hideFinale();
 }
 
 // --- interaction ---
@@ -196,7 +351,7 @@ function hintFor(frac) {
 
 // --- "what should we do next?" ---
 function whatsNext() {
-  const remaining = allItems.filter((it) => !state[it.id]);
+  const remaining = allItems.filter((it) => !isDone(it));
   if (remaining.length === 0) {
     showReveal("All done! 🎉", "Time to just relax together 💛");
     burstAt(null);
@@ -205,7 +360,11 @@ function whatsNext() {
   const pick = remaining[Math.floor(Math.random() * remaining.length)];
   showReveal(
     `${pick.emoji}  ${pick.label}`,
-    pick.place ? `📍 ${pick.place}` : "let's go do this one 💫"
+    pick.options
+      ? pick.options.join("  ·  ")
+      : pick.place
+      ? `📍 ${pick.place}`
+      : "let's go do this one 💫"
   );
 
   const card = activitiesEl.querySelector(`[data-id="${pick.id}"]`);
