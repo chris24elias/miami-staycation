@@ -5,7 +5,7 @@
 
 const CONFIG = {
   name: "Donna",
-  note: "48 hours of us, the beach, and way too much matcha 💛",
+  note: "Two days of doing absolutely nothing, together 🌴",
   kicker: "🏨 Eden Roc · Miami Beach · May 29–31",
 
   // Countdown target — checkout. (year, monthIndex, day, hour, min)
