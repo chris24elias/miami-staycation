@@ -703,6 +703,91 @@ body.night .intro {
 .compliment-btn:hover { filter: brightness(1.04); }
 .compliment-btn:active { transform: scale(0.97); }
 
+/* ---------- love-o-meter ---------- */
+.love-panel { text-align: center; }
+.love-title { margin: 0 0 14px; font-weight: 700; font-size: 1.05rem; color: var(--plum); }
+.love-pad {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  margin: 0 auto 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: radial-gradient(circle at 50% 35%, #ff9ec0, #ff6f91);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(255, 111, 145, 0.4);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.15s ease;
+}
+.love-pad:active,
+.love-pad.scanning { transform: scale(0.94); }
+.love-pad__icon { font-size: 2rem; }
+.love-pad__hint { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; }
+.love-meter {
+  height: 16px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.55);
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(90, 42, 77, 0.12);
+}
+.love-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--coral), var(--gold));
+  transition: width 0.06s linear;
+}
+.love-fill.over { background: linear-gradient(90deg, var(--gold), var(--teal), var(--coral)); }
+.love-num { margin: 10px 0 4px; font-size: 1.6rem; font-weight: 700; color: var(--plum); font-variant-numeric: tabular-nums; }
+.love-verdict { margin: 0; min-height: 1.3em; font-weight: 700; color: var(--plum-soft); }
+
+/* ---------- MEGA finale takeover + shake ---------- */
+.mega {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(40, 20, 60, 0.35);
+}
+.mega[hidden] { display: none; }
+.mega__text {
+  font-family: "Pacifico", cursive;
+  font-size: clamp(2rem, 9vw, 2.8rem);
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 4px 22px rgba(0, 0, 0, 0.45);
+}
+.mega--show .mega__text { animation: megaPop 2.2s ease both; }
+@keyframes megaPop {
+  0% { opacity: 0; transform: scale(0.4); }
+  15% { opacity: 1; transform: scale(1.12); }
+  30% { transform: scale(1); }
+  80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.06); }
+}
+.shake { animation: shake 0.6s ease; }
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0); }
+  12% { transform: translate(-7px, 4px); }
+  24% { transform: translate(7px, -3px); }
+  36% { transform: translate(-6px, -4px); }
+  48% { transform: translate(6px, 3px); }
+  60% { transform: translate(-4px, 2px); }
+  72% { transform: translate(4px, -2px); }
+  84% { transform: translate(-2px, 1px); }
+}
+
 /* ---------- sticker badges ---------- */
 .badges-panel { text-align: center; }
 .badges-title { margin: 0 0 14px; font-weight: 700; font-size: 1.05rem; color: var(--plum); }

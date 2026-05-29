@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=8" />
+  <link rel="stylesheet" href="styles.css?v=9" />
 </head>
 <body>
   <!-- Slim sticky progress bar -->
@@ -64,6 +64,18 @@
       <button type="button" class="compliment-btn" id="complimentBtn">💗 Press for a compliment</button>
     </section>
 
+    <!-- Love-o-meter -->
+    <section class="panel love-panel">
+      <p class="love-title">💘 Love-o-meter</p>
+      <button type="button" class="love-pad" id="lovePad">
+        <span class="love-pad__icon" aria-hidden="true">👆</span>
+        <span class="love-pad__hint">press &amp; hold</span>
+      </button>
+      <div class="love-meter"><span class="love-fill" id="loveFill"></span></div>
+      <p class="love-num" id="loveNum">0%</p>
+      <p class="love-verdict" id="loveVerdict"></p>
+    </section>
+
     <!-- Sticker badges -->
     <section class="panel badges-panel">
       <p class="badges-title">🏅 Stickers</p>
@@ -83,6 +95,8 @@
     <footer class="footer">
       <div class="footer__btns">
         <button type="button" class="reset-btn" id="introReplay">💌 replay note</button>
+        <button type="button" class="reset-btn" id="soundBtn">🔊 sounds</button>
+        <button type="button" class="reset-btn" id="oceanBtn">🌊 waves</button>
         <button type="button" class="reset-btn" id="resetBtn">↺ start over</button>
       </div>
       <p class="footer__made">made with 💛 for Baby</p>
@@ -111,6 +125,9 @@
     </div>
   </div>
 
+  <!-- MEGA finale takeover -->
+  <div class="mega" id="mega" hidden><span class="mega__text">🎉 WE DID IT! 🎉</span></div>
+
   <!-- Spin-the-wheel -->
   <div class="wheel-modal" id="wheelModal" hidden>
     <button type="button" class="wheel-close" id="wheelClose" aria-label="Close">✕</button>
@@ -124,6 +141,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

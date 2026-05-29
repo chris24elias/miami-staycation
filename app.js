@@ -256,6 +256,12 @@ let wheelRot = 0;
 let wheelItems = [];
 let spinning = false;
 let lastComp = -1;
+let audioCtx = null;
+let oceanNodes = null;
+let soundOn = true;
+let loveVal = 0;
+let loveTimer = null;
+let loveTick = 0;
 
 // --- persistence ---
 function loadState() {
@@ -431,6 +437,7 @@ function toggleOption(item, chip, card) {
 
   if (turnedOn) {
     buzz();
+    chime();
     popHearts(chip);
     burstAt(chip);
   }
@@ -451,6 +458,7 @@ function toggle(item, card) {
 
   if (nowDone) {
     buzz();
+    chime();
     popHearts(card);
     burstAt(card);
     if (doneCount() === total) showFinale();
@@ -545,6 +553,7 @@ function boopPup() {
   if (!pet || pet.hidden) return;
   popHearts(pet);
   buzz();
+  boopSound();
   if (pet.animate) {
     pet.animate(
       [
@@ -672,13 +681,175 @@ function pressCompliment() {
   buzz();
 }
 
+// --- sound effects (synthesized — no audio files) ---
+function getCtx() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch {
+    return null;
+  }
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, dur, type, gain, when) {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = type || "sine";
+  o.frequency.value = freq;
+  o.connect(g);
+  g.connect(ctx.destination);
+  const t = ctx.currentTime + (when || 0);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(gain || 0.2, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.start(t);
+  o.stop(t + dur + 0.04);
+}
+function chime() {
+  if (!soundOn) return;
+  tone(880, 0.18, "sine", 0.18, 0);
+  tone(1318, 0.26, "sine", 0.13, 0.07);
+}
+function boopSound() {
+  if (!soundOn) return;
+  tone(380, 0.1, "triangle", 0.22, 0);
+  tone(540, 0.12, "triangle", 0.16, 0.05);
+}
+function toggleSound() {
+  soundOn = !soundOn;
+  const btn = $("soundBtn");
+  if (btn) btn.textContent = soundOn ? "🔊 sounds" : "🔇 muted";
+  if (soundOn) chime();
+}
+function toggleOcean() {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const btn = $("oceanBtn");
+  if (oceanNodes) {
+    const { src, gain, lfo } = oceanNodes;
+    gain.gain.cancelScheduledValues(ctx.currentTime);
+    gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+    setTimeout(() => {
+      try { src.stop(); lfo.stop(); } catch {}
+    }, 600);
+    oceanNodes = null;
+    if (btn) btn.textContent = "🌊 waves";
+    return;
+  }
+  const size = ctx.sampleRate * 2;
+  const buffer = ctx.createBuffer(1, size, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  src.loop = true;
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 520;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.9);
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  const lfo = ctx.createOscillator();
+  lfo.frequency.value = 0.16;
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.value = 0.07;
+  lfo.connect(lfoGain);
+  lfoGain.connect(gain.gain);
+  src.start();
+  lfo.start();
+  oceanNodes = { src, gain, lfo };
+  if (btn) btn.textContent = "🌊 waves ✓";
+}
+
+// --- love-o-meter ---
+function loveVerdictFor(v) {
+  if (v >= 1500) return "🤯 the machine exploded — unmeasurable";
+  if (v >= 800) return "💥 OFF THE CHARTS — get a room you two";
+  if (v >= 400) return "😵‍💫 dangerously, recklessly in love";
+  if (v >= 150) return "💞 certified soulmates";
+  if (v >= 50) return "💛 deeply, obviously in love";
+  return "😏 that's it? hold it longer next time";
+}
+function loveStart(e) {
+  if (e && e.cancelable) e.preventDefault();
+  if (loveTimer) return;
+  loveVal = 0;
+  loveTick = 0;
+  $("loveVerdict").textContent = "";
+  $("loveFill").classList.remove("over");
+  $("lovePad").classList.add("scanning");
+  loveTimer = setInterval(() => {
+    loveVal += 4 + loveVal * 0.05;
+    loveTick++;
+    $("loveNum").textContent = Math.round(loveVal) + "%";
+    const fill = $("loveFill");
+    fill.style.width = Math.min(100, loveVal) + "%";
+    if (loveVal > 100) fill.classList.add("over");
+    if (loveTick % 7 === 0) popHearts($("lovePad"));
+  }, 55);
+}
+function loveEnd() {
+  if (!loveTimer) return;
+  clearInterval(loveTimer);
+  loveTimer = null;
+  $("lovePad").classList.remove("scanning");
+  $("loveVerdict").textContent = loveVerdictFor(Math.round(loveVal));
+  burstAt($("lovePad"));
+  chime();
+}
+
+// --- MEGA fireworks finale ---
+function megaFireworks() {
+  if (!hasConfetti()) return;
+  const dur = 4000;
+  const end = performance.now() + dur;
+  (function frame(now) {
+    const left = end - now;
+    if (left <= 0) return;
+    const count = Math.ceil(55 * (left / dur));
+    const base = { startVelocity: 34, spread: 360, ticks: 70, zIndex: 200, colors: PALETTE };
+    window.confetti({ ...base, particleCount: count, origin: { x: 0.1 + Math.random() * 0.25, y: Math.random() * 0.45 } });
+    window.confetti({ ...base, particleCount: count, origin: { x: 0.65 + Math.random() * 0.25, y: Math.random() * 0.45 } });
+    requestAnimationFrame(frame);
+  })(performance.now());
+}
+function screenShake() {
+  const m = document.querySelector("main");
+  if (!m) return;
+  m.classList.remove("shake");
+  void m.offsetWidth;
+  m.classList.add("shake");
+  setTimeout(() => m.classList.remove("shake"), 700);
+}
+function megaTakeover() {
+  const el = $("mega");
+  if (!el) return;
+  el.hidden = false;
+  el.classList.remove("mega--show");
+  void el.offsetWidth;
+  el.classList.add("mega--show");
+  setTimeout(() => {
+    el.classList.remove("mega--show");
+    el.hidden = true;
+  }, 2200);
+}
+
 // --- finale ---
 function showFinale() {
   finaleEl.classList.add("finale--show");
   finaleEl.setAttribute("aria-hidden", "false");
   setGif($("finalePet"), randomGif());
   finaleEl.scrollIntoView({ behavior: "smooth", block: "center" });
-  bigConfetti();
+  megaTakeover();
+  megaFireworks();
+  screenShake();
+  chime();
 }
 function hideFinale() {
   finaleEl.classList.remove("finale--show");
@@ -945,6 +1116,11 @@ $("wheelSpin").addEventListener("click", spinWheel);
 $("wheelClose").addEventListener("click", closeWheel);
 $("heroPet").addEventListener("click", boopPup);
 $("complimentBtn").addEventListener("click", pressCompliment);
+$("soundBtn").addEventListener("click", toggleSound);
+$("oceanBtn").addEventListener("click", toggleOcean);
+$("lovePad").addEventListener("pointerdown", loveStart);
+$("lovePad").addEventListener("pointercancel", loveEnd);
+document.addEventListener("pointerup", loveEnd);
 $("resetBtn").addEventListener("click", resetAll);
 $("introSealed").addEventListener("click", openLetter);
 $("introBtn").addEventListener("click", hideIntro);
