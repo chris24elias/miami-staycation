@@ -100,7 +100,7 @@ const CONFIG = {
           label: "Dessert",
           emoji: "🍩",
           hint: "treat yourself 🍩",
-          options: ["The Salty", "MYKA Greek Frozen Yogurt"],
+          options: ["The Salty", "MYKA Greek Frozen Yogurt", "Pharos Greek Frozen Yogurt"],
         },
       ],
     },
