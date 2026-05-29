@@ -26,7 +26,7 @@ const CONFIG = {
   gifs: [
     "https://media.giphy.com/media/1kK1f4uPB24Kk88ZCX/200.gif",
     "https://media.giphy.com/media/N4nazyg0nwJIF4tGTF/200.gif",
-    "https://media.giphy.com/media/Myww6wYfUmxoPHA2CK/200.gif",
+    "https://media.giphy.com/media/J5YdpJb2nv3xrYIAIt/200.gif",
     "https://media.giphy.com/media/2QwqAiIoQYBBTZjHtb/200.gif",
     "https://media.giphy.com/media/RtKgwIKKc2EjEyGla4/200.gif",
   ],
