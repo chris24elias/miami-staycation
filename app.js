@@ -22,6 +22,15 @@ const CONFIG = {
   nightStartHour: 19,
   nightEndHour: 6,
 
+  // Cute pup gifs (Pomeranians + Dachshunds) — one shows in the hero, one in the finale
+  gifs: [
+    "https://media.giphy.com/media/1kK1f4uPB24Kk88ZCX/200.gif",
+    "https://media.giphy.com/media/N4nazyg0nwJIF4tGTF/200.gif",
+    "https://media.giphy.com/media/Myww6wYfUmxoPHA2CK/200.gif",
+    "https://media.giphy.com/media/2QwqAiIoQYBBTZjHtb/200.gif",
+    "https://media.giphy.com/media/RtKgwIKKc2EjEyGla4/200.gif",
+  ],
+
   categories: [
     {
       title: "Relax & Pamper",
@@ -233,12 +242,24 @@ function mapsUrl(query) {
   return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query);
 }
 
+function randomGif() {
+  const g = CONFIG.gifs || [];
+  return g.length ? g[Math.floor(Math.random() * g.length)] : null;
+}
+function setGif(el, url) {
+  if (!el || !url) return;
+  el.onload = () => (el.hidden = false);
+  el.onerror = () => (el.hidden = true); // broken/blocked gif just hides, never shows a broken icon
+  el.src = url;
+}
+
 // --- build the page ---
 function hydrateHero() {
   $("heroKicker").textContent = CONFIG.kicker;
   $("heroTitle").innerHTML = `Hi ${CONFIG.name} <span class="hero__heart">💛</span>`;
   $("heroNote").textContent = CONFIG.note;
   $("finaleText").textContent = CONFIG.finale;
+  setGif($("heroPet"), randomGif());
 }
 
 function buildActivities() {
@@ -358,6 +379,7 @@ function toggleOption(item, chip, card) {
   updateProgress();
 
   if (turnedOn) {
+    buzz();
     popHearts(chip);
     burstAt(chip);
   }
@@ -377,6 +399,7 @@ function toggle(item, card) {
   updateProgress();
 
   if (nowDone) {
+    buzz();
     popHearts(card);
     burstAt(card);
     if (doneCount() === total) showFinale();
@@ -447,6 +470,7 @@ function showReveal(title, sub) {
 function showFinale() {
   finaleEl.classList.add("finale--show");
   finaleEl.setAttribute("aria-hidden", "false");
+  setGif($("finalePet"), randomGif());
   finaleEl.scrollIntoView({ behavior: "smooth", block: "center" });
   bigConfetti();
 }
@@ -613,7 +637,9 @@ function describeWeather(code, isDay) {
 function loadWeather() {
   const url =
     "https://api.open-meteo.com/v1/forecast?latitude=25.7907&longitude=-80.13" +
-    "&current=temperature_2m,weather_code,is_day&temperature_unit=fahrenheit&timezone=America/New_York";
+    "&current=temperature_2m,weather_code,is_day" +
+    "&daily=weather_code,temperature_2m_max,temperature_2m_min" +
+    "&temperature_unit=fahrenheit&timezone=America/New_York&forecast_days=3";
   fetch(url)
     .then((r) => (r.ok ? r.json() : null))
     .then((d) => {
@@ -621,12 +647,36 @@ function loadWeather() {
       const c = d.current;
       const w = describeWeather(c.weather_code, c.is_day);
       const el = $("weather");
-      el.textContent = `${w.emoji} ${Math.round(c.temperature_2m)}°F · ${w.label}`;
+      el.innerHTML = `${w.emoji} ${Math.round(c.temperature_2m)}°F · ${w.label} <span class="weather__caret" aria-hidden="true">▾</span>`;
       el.hidden = false;
+      if (d.daily && d.daily.time) buildForecast(d.daily);
     })
     .catch(() => {
       /* offline / blocked — strip just stays hidden */
     });
+}
+
+function buildForecast(daily) {
+  const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  $("forecast").innerHTML = daily.time
+    .map((t, i) => {
+      const [y, mo, dd] = t.split("-").map(Number);
+      const label = i === 0 ? "Today" : WD[new Date(y, mo - 1, dd).getDay()];
+      const w = describeWeather(daily.weather_code[i], 1);
+      const hi = Math.round(daily.temperature_2m_max[i]);
+      const lo = Math.round(daily.temperature_2m_min[i]);
+      return (
+        `<div class="forecast__row">` +
+        `<span class="forecast__day">${w.emoji} ${label}</span>` +
+        `<span class="forecast__temp">${hi}°<span class="forecast__lo"> ${lo}°</span></span>` +
+        `</div>`
+      );
+    })
+    .join("");
+}
+
+function buzz() {
+  if (navigator.vibrate) navigator.vibrate(12); // Android only; no-ops on iOS Safari
 }
 
 function applyTheme() {
@@ -654,6 +704,12 @@ $("resetBtn").addEventListener("click", resetAll);
 $("introSealed").addEventListener("click", openLetter);
 $("introBtn").addEventListener("click", hideIntro);
 $("introReplay").addEventListener("click", showIntro);
+$("weather").addEventListener("click", () => {
+  const fc = $("forecast");
+  const willOpen = fc.hidden;
+  fc.hidden = !willOpen;
+  $("weather").setAttribute("aria-expanded", String(willOpen));
+});
 
 let introSeen = false;
 try {
@@ -662,3 +718,8 @@ try {
   /* ignore */
 }
 if (!introSeen) showIntro();
+
+// Register the network-first service worker so the home-screen app always loads the latest.
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
+}
