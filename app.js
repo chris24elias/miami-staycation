@@ -43,6 +43,34 @@ const CONFIG = {
     { id: "champ", emoji: "🏆", label: "All In", test: () => total > 0 && doneCount() === total },
   ],
 
+  // Sweet one-liners for the "press for a compliment" button — edit freely 💛
+  compliments: [
+    "You're my favorite person — in Miami or anywhere. 💛",
+    "I'd pick you in every lifetime, Baby.",
+    "You make 84°F feel even warmer. 😏",
+    "Prettier than a Miami sunset, and that's saying a lot. 🌅",
+    "I still get butterflies. Every single time.",
+    "You + me is my favorite plan.",
+    "Sweeter than every matcha on this list. 🍵",
+    "Lucky doesn't even cover how I feel about you.",
+    "Your smile is the best view this whole weekend.",
+    "Two days with you beats anything else in the world.",
+    "You're the reason I'm always grinning at my phone.",
+    "Beautiful inside and out — and you have no clue how much.",
+    "Home is wherever you are. 🏝️",
+    "You're my best adventure, Baby.",
+    "Even doing absolutely nothing is perfect with you. 🌴",
+    "I fall for you a little more every day.",
+    "You make ordinary moments feel like a vacation.",
+    "Cutest girl on South Beach. Hands down.",
+    "If loving you were a checklist, I'd check every box forever. 💛",
+    "You're so easy to love it's almost unfair.",
+    "My favorite hello and my hardest goodbye.",
+    "Being next to you is my favorite place to be.",
+    "I just really, really love you. Obviously. 💛",
+    "Thank you for being mine this weekend — and every one after. 💛",
+  ],
+
   categories: [
     {
       title: "Relax & Pamper",
@@ -227,6 +255,7 @@ let badgesReady = false;
 let wheelRot = 0;
 let wheelItems = [];
 let spinning = false;
+let lastComp = -1;
 
 // --- persistence ---
 function loadState() {
@@ -621,6 +650,28 @@ function closeWheel() {
   document.body.style.overflow = "";
 }
 
+// --- press for a compliment ---
+function pressCompliment() {
+  const list = CONFIG.compliments || [];
+  if (!list.length) return;
+  let i = Math.floor(Math.random() * list.length);
+  for (let k = 0; k < 6 && i === lastComp; k++) i = Math.floor(Math.random() * list.length);
+  lastComp = i;
+  const el = $("complimentText");
+  el.textContent = list[i];
+  if (el.animate) {
+    el.animate(
+      [
+        { opacity: 0, transform: "translateY(8px) scale(0.98)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 350, easing: "ease" }
+    );
+  }
+  popHearts($("complimentBtn"));
+  buzz();
+}
+
 // --- finale ---
 function showFinale() {
   finaleEl.classList.add("finale--show");
@@ -893,6 +944,7 @@ $("nextBtn").addEventListener("click", openWheel);
 $("wheelSpin").addEventListener("click", spinWheel);
 $("wheelClose").addEventListener("click", closeWheel);
 $("heroPet").addEventListener("click", boopPup);
+$("complimentBtn").addEventListener("click", pressCompliment);
 $("resetBtn").addEventListener("click", resetAll);
 $("introSealed").addEventListener("click", openLetter);
 $("introBtn").addEventListener("click", hideIntro);
