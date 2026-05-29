@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="styles.css?v=7" />
 </head>
 <body>
   <!-- Slim sticky progress bar -->
@@ -47,6 +47,7 @@
         <div class="countdown__item"><span class="countdown__num" id="cdSecs">--</span><span class="countdown__unit">sec</span></div>
       </div>
       <p class="countdown__caption" id="cdCaption">until checkout 🧳</p>
+      <p class="golden" id="golden" hidden></p>
     </section>
 
     <!-- PROGRESS + WHAT'S NEXT -->
@@ -55,6 +56,12 @@
       <div class="progress__track"><span class="progress__fill" id="progressFill"></span></div>
       <p class="progress__hint" id="progressHint">Tap a card once you've done it ✨</p>
       <button type="button" class="next-btn" id="nextBtn">🎡 What should we do next?</button>
+    </section>
+
+    <!-- Sticker badges -->
+    <section class="panel badges-panel">
+      <p class="badges-title">🏅 Stickers</p>
+      <div class="badges" id="badges"></div>
     </section>
 
     <!-- FINALE (hidden until everything is checked off) -->
@@ -98,7 +105,19 @@
     </div>
   </div>
 
+  <!-- Spin-the-wheel -->
+  <div class="wheel-modal" id="wheelModal" hidden>
+    <button type="button" class="wheel-close" id="wheelClose" aria-label="Close">✕</button>
+    <p class="wheel-heading">What should we do next? 🎡</p>
+    <div class="wheel-stage">
+      <div class="wheel-pointer" aria-hidden="true"></div>
+      <div class="wheel" id="wheel"></div>
+    </div>
+    <button type="button" class="wheel-spin" id="wheelSpin">Spin the wheel</button>
+    <div class="wheel-result" id="wheelResult" hidden></div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>

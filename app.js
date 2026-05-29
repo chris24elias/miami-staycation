@@ -31,6 +31,18 @@ const CONFIG = {
     "https://media.giphy.com/media/RtKgwIKKc2EjEyGla4/200.gif",
   ],
 
+  // Sticker badges she unlocks as she goes
+  badges: [
+    { id: "start", emoji: "🌟", label: "First Adventure", test: () => doneCount() >= 1 },
+    { id: "beach", emoji: "🏖️", label: "Beach Bum", test: () => doneId("beach") },
+    { id: "matcha", emoji: "🍵", label: "Matcha Maniac", test: () => doneId("matcha") },
+    { id: "pamper", emoji: "🧖‍♀️", label: "Spa Day", test: () => doneId("spa") || doneId("facial") || doneId("massage") },
+    { id: "foodie", emoji: "🍽️", label: "Foodie", test: () => doneId("dinner") || doneId("pizza") },
+    { id: "owl", emoji: "🦉", label: "Night Owl", test: () => ["rollerdisco", "poolparty", "comedy", "movie", "faena"].some(doneId) },
+    { id: "half", emoji: "💞", label: "Halfway", test: () => doneCount() >= Math.ceil(total / 2) },
+    { id: "champ", emoji: "🏆", label: "All In", test: () => total > 0 && doneCount() === total },
+  ],
+
   categories: [
     {
       title: "Relax & Pamper",
@@ -209,6 +221,12 @@ const finaleEl = $("finale");
 const reveal = $("reveal");
 
 let revealTimer = null;
+let sunsets = [];
+const earnedBadges = new Set();
+let badgesReady = false;
+let wheelRot = 0;
+let wheelItems = [];
+let spinning = false;
 
 // --- persistence ---
 function loadState() {
@@ -236,6 +254,10 @@ function isDone(item) {
 }
 function doneCount() {
   return allItems.filter(isDone).length;
+}
+function doneId(id) {
+  const it = allItems.find((x) => x.id === id);
+  return it ? isDone(it) : false;
 }
 
 function mapsUrl(query) {
@@ -422,6 +444,28 @@ function updateProgress() {
 
   if (done < total) progressHint.textContent = hintFor(done / total);
   else progressHint.textContent = "you did the whole thing 🥹";
+
+  renderBadges();
+}
+
+function renderBadges() {
+  const strip = $("badges");
+  if (!strip) return;
+  const fresh = [];
+  strip.innerHTML = (CONFIG.badges || [])
+    .map((b) => {
+      const got = !!b.test();
+      if (got && !earnedBadges.has(b.id)) {
+        earnedBadges.add(b.id);
+        if (badgesReady) fresh.push(b);
+      }
+      return `<div class="badge${got ? " badge--on" : ""}"><span class="badge__emoji">${b.emoji}</span><span class="badge__label">${b.label}</span></div>`;
+    })
+    .join("");
+  if (fresh.length) {
+    const b = fresh[fresh.length - 1];
+    showReveal(`🏅 ${b.emoji} Sticker unlocked!`, b.label);
+  }
 }
 
 function hintFor(frac) {
@@ -464,6 +508,117 @@ function showReveal(title, sub) {
   reveal.classList.add("reveal--show");
   clearTimeout(revealTimer);
   revealTimer = setTimeout(() => reveal.classList.remove("reveal--show"), 3200);
+}
+
+// --- tap-the-pup easter egg ---
+function boopPup() {
+  const pet = $("heroPet");
+  if (!pet || pet.hidden) return;
+  popHearts(pet);
+  buzz();
+  if (pet.animate) {
+    pet.animate(
+      [
+        { transform: "scale(1)" },
+        { transform: "scale(1.16) rotate(-5deg)", offset: 0.35 },
+        { transform: "scale(0.95) rotate(3deg)", offset: 0.7 },
+        { transform: "scale(1)" },
+      ],
+      { duration: 450, easing: "ease" }
+    );
+  }
+  const cur = pet.getAttribute("src");
+  let next = randomGif();
+  for (let i = 0; i < 6 && next === cur; i++) next = randomGif();
+  setGif(pet, next);
+}
+
+// --- spin-the-wheel ---
+function focusCard(item) {
+  const card = activitiesEl.querySelector(`[data-id="${item.id}"]`);
+  if (!card) return;
+  card.scrollIntoView({ behavior: "smooth", block: "center" });
+  card.classList.remove("card--pulse");
+  void card.offsetWidth;
+  card.classList.add("card--pulse");
+  setTimeout(() => card.classList.remove("card--pulse"), 1600);
+}
+function buildWheel(items) {
+  const colors = ["#ff6f91", "#ffd66b", "#2ec4b6", "#ffb38a", "#ff8fb1"];
+  const n = Math.max(items.length, 1);
+  const seg = 360 / n;
+  const stops = items
+    .map((_, i) => `${colors[i % colors.length]} ${i * seg}deg ${(i + 1) * seg}deg`)
+    .join(", ");
+  const wheel = $("wheel");
+  wheel.style.transition = "none";
+  wheelRot = 0;
+  wheel.style.transform = "rotate(0deg)";
+  wheel.style.background = items.length ? `conic-gradient(${stops})` : "#ffd66b";
+  void wheel.offsetWidth;
+  wheel.style.transition = "";
+}
+function openWheel() {
+  wheelItems = allItems.filter((it) => !isDone(it));
+  const result = $("wheelResult");
+  result.hidden = true;
+  result.innerHTML = "";
+  if (wheelItems.length === 0) {
+    buildWheel(allItems.slice(0, 6));
+    result.hidden = false;
+    result.innerHTML = `<span class="wheel-result__title">All done! 🎉</span><span>Time to just relax together 💛</span>`;
+    $("wheelSpin").disabled = true;
+  } else {
+    buildWheel(wheelItems);
+    $("wheelSpin").disabled = false;
+  }
+  $("wheelModal").hidden = false;
+  document.body.style.overflow = "hidden";
+}
+function spinWheel() {
+  if (spinning || !wheelItems.length) return;
+  spinning = true;
+  $("wheelSpin").disabled = true;
+  $("wheelResult").hidden = true;
+  const n = wheelItems.length;
+  const seg = 360 / n;
+  const pick = Math.floor(Math.random() * n);
+  const targetOffset = (360 - (pick + 0.5) * seg) % 360;
+  const currentMod = ((wheelRot % 360) + 360) % 360;
+  let delta = targetOffset - currentMod;
+  if (delta < 0) delta += 360;
+  wheelRot += 360 * 5 + delta;
+  const wheel = $("wheel");
+  wheel.style.transform = `rotate(${wheelRot}deg)`;
+  const done = (e) => {
+    if (e.propertyName !== "transform") return;
+    wheel.removeEventListener("transitionend", done);
+    spinning = false;
+    revealWheel(wheelItems[pick]);
+  };
+  wheel.addEventListener("transitionend", done);
+}
+function revealWheel(item) {
+  const r = $("wheelResult");
+  const sub = item.options
+    ? item.options.join(" · ")
+    : item.place
+    ? `📍 ${item.place}`
+    : "let's go do this one 💫";
+  r.innerHTML =
+    `<span class="wheel-result__title">${item.emoji} ${item.label}</span><span>${sub}</span>` +
+    `<br /><button type="button" class="wheel-spin" id="wheelGo" style="margin-top:14px">Take me there →</button>`;
+  r.hidden = false;
+  burstAt(null);
+  $("wheelGo").addEventListener("click", () => {
+    closeWheel();
+    focusCard(item);
+  });
+  $("wheelSpin").disabled = false;
+}
+function closeWheel() {
+  $("wheelModal").hidden = true;
+  document.body.style.overflow = "";
 }
 
 // --- finale ---
@@ -531,8 +686,38 @@ function popHearts(el) {
   }
 }
 
+// --- golden hour ---
+function fmtDur(ms) {
+  const m = Math.max(0, Math.floor(ms / 60000));
+  const h = Math.floor(m / 60);
+  return h > 0 ? `${h}h ${m % 60}m` : `${m % 60}m`;
+}
+function updateGolden() {
+  const el = $("golden");
+  if (!el || !sunsets.length) return;
+  const now = Date.now();
+  const GH = 60 * 60000; // golden hour ≈ the hour before sunset
+  for (const s of sunsets) {
+    const sunset = s.getTime();
+    if (isNaN(sunset)) continue;
+    const gStart = sunset - GH;
+    if (now < gStart) {
+      el.textContent = `🌅 golden hour in ${fmtDur(gStart - now)}`;
+      el.hidden = false;
+      return;
+    }
+    if (now < sunset) {
+      el.textContent = "🌅✨ golden hour now — go catch the light!";
+      el.hidden = false;
+      return;
+    }
+  }
+  el.hidden = true;
+}
+
 // --- countdown ---
 function tickCountdown() {
+  updateGolden();
   const diff = CONFIG.checkout.getTime() - Date.now();
   if (diff <= 0) {
     ["cdDays", "cdHours", "cdMins", "cdSecs"].forEach((id) => ($(id).textContent = "0"));
@@ -638,7 +823,7 @@ function loadWeather() {
   const url =
     "https://api.open-meteo.com/v1/forecast?latitude=25.7907&longitude=-80.13" +
     "&current=temperature_2m,weather_code,is_day" +
-    "&daily=weather_code,temperature_2m_max,temperature_2m_min" +
+    "&daily=weather_code,temperature_2m_max,temperature_2m_min,sunset" +
     "&temperature_unit=fahrenheit&timezone=America/New_York&forecast_days=3";
   fetch(url)
     .then((r) => (r.ok ? r.json() : null))
@@ -650,6 +835,10 @@ function loadWeather() {
       el.innerHTML = `${w.emoji} ${Math.round(c.temperature_2m)}°F · ${w.label} <span class="weather__caret" aria-hidden="true">▾</span>`;
       el.hidden = false;
       if (d.daily && d.daily.time) buildForecast(d.daily);
+      if (d.daily && d.daily.sunset) {
+        sunsets = d.daily.sunset.map((s) => new Date(s));
+        updateGolden();
+      }
     })
     .catch(() => {
       /* offline / blocked — strip just stays hidden */
@@ -690,6 +879,7 @@ hydrateHero();
 hydrateIntro();
 buildActivities();
 updateProgress();
+badgesReady = true;
 if (doneCount() === total && total > 0) showFinale();
 
 tickCountdown();
@@ -699,7 +889,10 @@ loadWeather();
 applyTheme();
 setInterval(applyTheme, 60000);
 
-$("nextBtn").addEventListener("click", whatsNext);
+$("nextBtn").addEventListener("click", openWheel);
+$("wheelSpin").addEventListener("click", spinWheel);
+$("wheelClose").addEventListener("click", closeWheel);
+$("heroPet").addEventListener("click", boopPup);
 $("resetBtn").addEventListener("click", resetAll);
 $("introSealed").addEventListener("click", openLetter);
 $("introBtn").addEventListener("click", hideIntro);
