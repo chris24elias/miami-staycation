@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Donna's Miami Staycation 💛</title>
+  <meta name="description" content="48 hours of us, the beach, and way too much matcha." />
+  <meta name="theme-color" content="#ff6f91" />
+
+  <!-- Add-to-home-screen / PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Staycation" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>🌴</text></svg>" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Slim sticky progress bar -->
+  <header class="topbar">
+    <div class="topbar__track"><span class="topbar__fill" id="topbarFill"></span></div>
+    <span class="topbar__label" id="topbarLabel">0 / 0</span>
+  </header>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <p class="hero__kicker" id="heroKicker">🌴 Miami Beach 🌴</p>
+      <h1 class="hero__title" id="heroTitle">Hi Donna <span class="hero__heart">💛</span></h1>
+      <p class="hero__note" id="heroNote"></p>
+
+      <div class="countdown" aria-live="off">
+        <div class="countdown__item"><span class="countdown__num" id="cdDays">--</span><span class="countdown__unit">days</span></div>
+        <div class="countdown__item"><span class="countdown__num" id="cdHours">--</span><span class="countdown__unit">hrs</span></div>
+        <div class="countdown__item"><span class="countdown__num" id="cdMins">--</span><span class="countdown__unit">min</span></div>
+        <div class="countdown__item"><span class="countdown__num" id="cdSecs">--</span><span class="countdown__unit">sec</span></div>
+      </div>
+      <p class="countdown__caption" id="cdCaption">until checkout 🧳</p>
+    </section>
+
+    <!-- PROGRESS + WHAT'S NEXT -->
+    <section class="panel progress">
+      <p class="progress__label" id="progressLabel">0 of 0 adventures done 💕</p>
+      <div class="progress__track"><span class="progress__fill" id="progressFill"></span></div>
+      <p class="progress__hint" id="progressHint">Tap a card once you've done it ✨</p>
+      <button type="button" class="next-btn" id="nextBtn">🎡 What should we do next?</button>
+    </section>
+
+    <!-- FINALE (hidden until everything is checked off) -->
+    <section class="panel finale" id="finale" aria-hidden="true">
+      <span class="finale__spark">🎉💛🎉</span>
+      <p class="finale__text" id="finaleText"></p>
+    </section>
+
+    <!-- ACTIVITIES (built by app.js) -->
+    <div id="activities"></div>
+
+    <footer class="footer">
+      <button type="button" class="reset-btn" id="resetBtn">↺ start the list over</button>
+      <p class="footer__made">made with 💛 for Donna</p>
+    </footer>
+  </main>
+
+  <!-- "What's next" toast -->
+  <div class="reveal" id="reveal" role="status" aria-live="polite">
+    <span class="reveal__title" id="revealTitle"></span>
+    <span class="reveal__sub" id="revealSub"></span>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
