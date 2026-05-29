@@ -673,6 +673,57 @@ body.night .intro {
 }
 .golden[hidden] { display: none; }
 
+/* ---------- itinerary / the plan ---------- */
+.itin-heading {
+  margin: 0 0 16px;
+  text-align: center;
+  font-family: "Pacifico", cursive;
+  font-weight: 400;
+  font-size: 1.5rem;
+  color: var(--plum);
+}
+.itin-day { margin-bottom: 18px; }
+.itin-day:last-child { margin-bottom: 0; }
+.itin-day__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(90, 42, 77, 0.12);
+}
+.itin-day__emoji { font-size: 1.2rem; }
+.itin-day__name { font-weight: 700; font-size: 1.1rem; color: var(--plum); }
+.itin-day__date { font-size: 0.82rem; font-weight: 700; color: var(--plum-soft); }
+.itin-list { display: flex; flex-direction: column; gap: 12px; }
+.itin-row { display: flex; gap: 12px; align-items: flex-start; }
+.itin-time {
+  flex: none;
+  width: 64px;
+  padding-top: 2px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--teal-d);
+  text-align: right;
+}
+.itin-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 2px solid rgba(46, 196, 182, 0.35);
+  padding-left: 12px;
+}
+.itin-title { font-weight: 700; color: var(--plum); }
+.itin-note { font-size: 0.85rem; font-weight: 600; color: var(--plum-soft); }
+.itin-nav {
+  align-self: flex-start;
+  margin-top: 5px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--teal-d);
+  text-decoration: none;
+}
+
 /* ---------- press for a compliment ---------- */
 .compliment-panel { text-align: center; }
 .compliment-text {

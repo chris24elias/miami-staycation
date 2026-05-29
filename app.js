@@ -71,6 +71,55 @@ const CONFIG = {
     "Thank you for being mine this weekend — and every one after. 💛",
   ],
 
+  // Day-by-day plan (easy to edit as you go)
+  itinerary: [
+    {
+      day: "Friday",
+      date: "May 29",
+      emoji: "🌆",
+      entries: [
+        { time: "6:00pm", title: "Arrive & settle in", note: "check in, unpack, breathe 🧳" },
+        { time: "~7:30", title: "Dinner", note: "still deciding 🍽️ (StripSteak or Scarpetta — both next door)" },
+        {
+          time: "after",
+          title: "MYKA frozen yogurt",
+          note: "Greek froyo run 🍦",
+          place: "MYKA Greek Frozen Yogurt",
+          mapsQuery: "MYKA Greek Frozen Yogurt, Miami Beach FL",
+        },
+        { time: "nightcap", title: "Drinks", note: "Eden Roc Lobby Bar 🍸 (or Bleau Bar next door)" },
+      ],
+    },
+    {
+      day: "Saturday",
+      date: "May 30",
+      emoji: "☀️",
+      entries: [
+        { time: "morning", title: "Slow start", note: "matcha + coffee ☕🍵" },
+        { time: "midday", title: "Pool & beach", note: "soak up the sun 🏖️" },
+        { time: "afternoon", title: "Pamper", note: "massage · facial · spa 🧖‍♀️" },
+        {
+          time: "5–9pm",
+          title: "Roller Disco",
+          note: "free, beachside 🪩",
+          place: "Miami Beach Bandshell",
+          mapsQuery: "Miami Beach Bandshell, 7275 Collins Ave, Miami Beach FL",
+        },
+        { time: "dinner", title: "Dinner out", note: "Yaya · Casa Tua · Cactus Club 🍽️" },
+      ],
+    },
+    {
+      day: "Sunday",
+      date: "May 31",
+      emoji: "🧳",
+      entries: [
+        { time: "morning", title: "One more beach moment", note: "coffee + toes in the sand ☕" },
+        { time: "before noon", title: "Last matcha to-go", note: "one for the road 🍵" },
+        { time: "11:00am", title: "Checkout", note: "until next time, Miami 💛" },
+      ],
+    },
+  ],
+
   categories: [
     {
       title: "Relax & Pamper",
@@ -341,6 +390,42 @@ function buildActivities() {
 
     activitiesEl.appendChild(section);
   });
+}
+
+function buildItinerary() {
+  const wrap = $("itinerary");
+  if (!wrap || !CONFIG.itinerary) return;
+  wrap.innerHTML = CONFIG.itinerary
+    .map(
+      (day) => `
+      <div class="itin-day">
+        <div class="itin-day__head">
+          <span class="itin-day__emoji" aria-hidden="true">${day.emoji}</span>
+          <span class="itin-day__name">${day.day}</span>
+          <span class="itin-day__date">${day.date}</span>
+        </div>
+        <div class="itin-list">
+          ${day.entries
+            .map(
+              (e) => `
+            <div class="itin-row">
+              <span class="itin-time">${e.time}</span>
+              <div class="itin-body">
+                <span class="itin-title">${e.title}</span>
+                ${e.note ? `<span class="itin-note">${e.note}</span>` : ""}
+                ${
+                  e.mapsQuery || e.place
+                    ? `<a class="itin-nav" href="${mapsUrl(e.mapsQuery || e.place + ", Miami, FL")}" target="_blank" rel="noopener">🧭 directions</a>`
+                    : ""
+                }
+              </div>
+            </div>`
+            )
+            .join("")}
+        </div>
+      </div>`
+    )
+    .join("");
 }
 
 function makeCard(item, index) {
@@ -1196,6 +1281,7 @@ function applyTheme() {
 hydrateHero();
 hydrateIntro();
 buildActivities();
+buildItinerary();
 updateProgress();
 badgesReady = true;
 if (doneCount() === total && total > 0) showFinale();
