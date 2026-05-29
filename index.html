@@ -62,7 +62,10 @@
     <div id="activities"></div>
 
     <footer class="footer">
-      <button type="button" class="reset-btn" id="resetBtn">↺ start the list over</button>
+      <div class="footer__btns">
+        <button type="button" class="reset-btn" id="introReplay">💌 replay note</button>
+        <button type="button" class="reset-btn" id="resetBtn">↺ start over</button>
+      </div>
       <p class="footer__made">made with 💛 for Donna</p>
     </footer>
   </main>
@@ -71,6 +74,22 @@
   <div class="reveal" id="reveal" role="status" aria-live="polite">
     <span class="reveal__title" id="revealTitle"></span>
     <span class="reveal__sub" id="revealSub"></span>
+  </div>
+
+  <!-- "Open me" intro -->
+  <div class="intro" id="intro" hidden>
+    <div class="intro__card">
+      <div class="intro__sealed" id="introSealed" role="button" tabindex="0" aria-label="Open your note">
+        <span class="intro__env" aria-hidden="true">💌</span>
+        <p class="intro__hint">a little note for you</p>
+        <p class="intro__tap">tap to open</p>
+      </div>
+      <div class="intro__open" id="introOpen" hidden>
+        <h2 class="intro__title" id="introTitle"></h2>
+        <p class="intro__note" id="introNote"></p>
+        <button type="button" class="intro__btn" id="introBtn">Let's go 🌴</button>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>

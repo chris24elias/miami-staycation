@@ -442,6 +442,78 @@ button.card:active { transform: scale(0.98); }
   text-shadow: 0 1px 3px rgba(90,42,77,0.3);
 }
 
+/* ---------- "open me" intro ---------- */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 26px;
+  background: linear-gradient(180deg, #ff7aa2 0%, #ffb38a 55%, #ffd66b 100%);
+  transition: opacity 0.5s ease;
+}
+.intro[hidden] { display: none; }
+.intro--hiding { opacity: 0; }
+.intro__card {
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 38px 26px;
+}
+.intro__sealed { cursor: pointer; }
+.intro__sealed[hidden] { display: none; }
+.intro__env { display: block; font-size: 4.6rem; animation: beat 1.8s ease-in-out infinite; }
+.intro__hint { margin: 16px 0 4px; font-size: 1.15rem; font-weight: 700; color: var(--plum); }
+.intro__tap {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--plum-soft);
+}
+.intro__open { animation: rise 0.5s cubic-bezier(.2,.8,.2,1) both; }
+.intro__open[hidden] { display: none; }
+.intro__title {
+  font-family: "Pacifico", cursive;
+  font-weight: 400;
+  font-size: 1.9rem;
+  color: var(--plum);
+  margin: 0 0 14px;
+}
+.intro__note {
+  font-size: 1.06rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--plum);
+  margin: 0 0 24px;
+}
+.intro__btn {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 14px 30px;
+  border-radius: 16px;
+  background: linear-gradient(120deg, var(--coral), var(--peach));
+  box-shadow: 0 10px 22px rgba(255, 111, 145, 0.4);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.intro__btn:active { transform: scale(0.96); }
+
+/* footer buttons row */
+.footer__btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
 /* ---------- motion-sensitive folks ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

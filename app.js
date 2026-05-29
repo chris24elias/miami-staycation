@@ -8,6 +8,12 @@ const CONFIG = {
   note: "Two days of doing absolutely nothing, together 🌴",
   kicker: "🏨 Eden Roc · Miami Beach · May 29–31",
 
+  intro: {
+    title: "Hi Donna 💛",
+    note: "No alarms, no rush — just us and the beach for two days. Here's everything I want to do with you. 🌴",
+    button: "Let's go 🌴",
+  },
+
   // Countdown target — checkout. (year, monthIndex, day, hour, min)
   // monthIndex is 0-based, so 4 = May.
   checkout: new Date(2026, 4, 31, 11, 0, 0),
@@ -59,6 +65,7 @@ const CONFIG = {
             "Honey Veil",
             "Baker and Barista",
             "Maman",
+            "Facade",
           ],
         },
         {
@@ -71,6 +78,7 @@ const CONFIG = {
             "Surry Hills Coffee",
             "Under The Mango Tree",
             "Cachito Coffee & Bakery",
+            "Peche Mignon",
           ],
         },
         {
@@ -480,8 +488,42 @@ function resetAll() {
   updateProgress();
 }
 
+// --- "open me" intro ---
+const INTRO_KEY = "donna-intro-seen-v1";
+
+function hydrateIntro() {
+  $("introTitle").textContent = CONFIG.intro.title;
+  $("introNote").textContent = CONFIG.intro.note;
+  $("introBtn").textContent = CONFIG.intro.button;
+}
+function showIntro() {
+  $("introSealed").hidden = false;
+  $("introOpen").hidden = true;
+  const intro = $("intro");
+  intro.classList.remove("intro--hiding");
+  intro.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+function openLetter() {
+  $("introSealed").hidden = true;
+  $("introOpen").hidden = false;
+  burstAt(null);
+}
+function hideIntro() {
+  const intro = $("intro");
+  intro.classList.add("intro--hiding");
+  document.body.style.overflow = "";
+  try {
+    localStorage.setItem(INTRO_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+  setTimeout(() => (intro.hidden = true), 500);
+}
+
 // --- boot ---
 hydrateHero();
+hydrateIntro();
 buildActivities();
 updateProgress();
 if (doneCount() === total && total > 0) showFinale();
@@ -491,3 +533,14 @@ setInterval(tickCountdown, 1000);
 
 $("nextBtn").addEventListener("click", whatsNext);
 $("resetBtn").addEventListener("click", resetAll);
+$("introSealed").addEventListener("click", openLetter);
+$("introBtn").addEventListener("click", hideIntro);
+$("introReplay").addEventListener("click", showIntro);
+
+let introSeen = false;
+try {
+  introSeen = !!localStorage.getItem(INTRO_KEY);
+} catch {
+  /* ignore */
+}
+if (!introSeen) showIntro();
