@@ -79,7 +79,13 @@ const CONFIG = {
       emoji: "🌆",
       entries: [
         { time: "6:00pm", title: "Arrive & settle in", note: "check in, unpack, breathe 🧳" },
-        { time: "~7:30", title: "Dinner", note: "still deciding 🍽️ (StripSteak or Scarpetta — both next door)" },
+        {
+          time: "9:30pm",
+          title: "Dinner",
+          note: "Macchialina 🍝 (handmade pasta · South Beach)",
+          place: "Macchialina",
+          mapsQuery: "Macchialina, 820 Alton Rd, Miami Beach FL",
+        },
         {
           time: "after",
           title: "MYKA frozen yogurt",
@@ -116,6 +122,13 @@ const CONFIG = {
         { time: "morning", title: "One more beach moment", note: "coffee + toes in the sand ☕" },
         { time: "before noon", title: "Last matcha to-go", note: "one for the road 🍵" },
         { time: "11:00am", title: "Checkout", note: "until next time, Miami 💛" },
+        {
+          time: "7:30pm",
+          title: "Faena Theater",
+          note: "a show to close the trip 🎭",
+          place: "Faena Theater",
+          mapsQuery: "Faena Theater, Miami Beach FL",
+        },
       ],
     },
   ],
