@@ -194,6 +194,7 @@ const CONFIG = {
             "Under The Mango Tree",
             "Cachito Coffee & Bakery",
             "Peche Mignon",
+            "Sunshine Cafe",
           ],
         },
         {
