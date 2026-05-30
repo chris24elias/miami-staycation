@@ -228,6 +228,19 @@ const CONFIG = {
       ],
     },
     {
+      title: "Bars",
+      emoji: "🍸",
+      items: [
+        {
+          id: "bars",
+          label: "Bars",
+          emoji: "🍸",
+          hint: "a little nightcap 🍸",
+          options: ["Stormy Monday"],
+        },
+      ],
+    },
+    {
       title: "Experiences",
       emoji: "🎭",
       items: [
