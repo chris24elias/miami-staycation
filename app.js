@@ -202,7 +202,7 @@ const CONFIG = {
           label: "Dinner",
           emoji: "🍽️",
           hint: "where to tonight?",
-          options: ["Cactus Club Cafe", "Yaya", "Fooq's", "Casa Tua", "Esquina Cubana"],
+          options: ["Macchialina", "Cactus Club Cafe", "Yaya", "Fooq's", "Casa Tua", "Esquina Cubana"],
         },
         {
           id: "pizza",
