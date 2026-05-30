@@ -102,6 +102,13 @@ const CONFIG = {
       emoji: "☀️",
       entries: [
         { time: "morning", title: "Slow start", note: "matcha + coffee ☕🍵" },
+        {
+          time: "breakfast",
+          title: "Breakfast at Sunshine Cafe",
+          note: "morning bite to start the day ☀️🥐",
+          place: "Sunshine Cafe",
+          mapsQuery: "Sunshine Cafe, Miami Beach FL",
+        },
         { time: "midday", title: "Pool & beach", note: "soak up the sun 🏖️" },
         { time: "afternoon", title: "Pamper", note: "massage · facial · spa 🧖‍♀️" },
         {
